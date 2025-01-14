@@ -1,0 +1,39 @@
+{
+  "cesVersion": "2.12.1",
+  "projectName": "subscriptions-tracker",
+  "packages": [
+    {
+      "name": "expo-router",
+      "type": "navigation",
+      "options": {
+        "type": "stack"
+      }
+    },
+    {
+      "name": "nativewind",
+      "type": "styling"
+    },
+    {
+      "name": "supabase",
+      "type": "authentication"
+    }
+  ],
+  "flags": {
+    "noGit": false,
+    "noInstall": false,
+    "overwrite": false,
+    "importAlias": true,
+    "packageManager": "pnpm",
+    "eas": false
+  },
+  "packageManager": {
+    "type": "pnpm",
+    "version": "9.15.4"
+  },
+  "os": {
+    "type": "Linux",
+    "platform": "linux",
+    "arch": "x64",
+    "kernelVersion": "6.12.4-1-MANJARO"
+  }
+}
