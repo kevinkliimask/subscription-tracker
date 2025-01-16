@@ -28,9 +28,14 @@ const SubscriptionLogo = ({ name, logoUrl, size = 48 }: SubscriptionLogoProps) =
         width: size,
         height: size,
         borderRadius: 8,
-      }}
-      className="items-center justify-center">
-      <Text style={{ fontSize: size * 0.4 }} className="font-bold text-white">
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+      <Text
+        style={{
+          fontSize: size * 0.4,
+        }}
+        className="font-bold text-white">
         {name.charAt(0)}
       </Text>
     </LinearGradient>

@@ -1,4 +1,4 @@
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { View, Text, Pressable } from 'react-native';
 
 import SubscriptionLogo from '~/components/SubscriptionLogo';

@@ -9,6 +9,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="subscriptions"
         options={{
+          title: 'Subscriptions',
           headerShown: false,
           tabBarIcon: ({ color }) => <Subscription size={28} color={color} />,
         }}

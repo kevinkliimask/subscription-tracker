@@ -9,12 +9,12 @@ import {
 } from 'lucide-react-native';
 import { View, Text, ScrollView } from 'react-native';
 
-import { mockSubscriptions } from '~/app/mock/data';
 import SubscriptionLogo from '~/components/SubscriptionLogo';
 import { useColors } from '~/hooks/useColors';
+import { mockSubscriptions } from '~/mock/data';
 
 const SubscriptionDetails = () => {
-  const { icon } = useColors();
+  const { colors } = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const subscription = mockSubscriptions.find((sub) => sub.id === id);
 
@@ -38,7 +38,7 @@ const SubscriptionDetails = () => {
     value: string;
   }) => (
     <View className="items-center px-4">
-      <Icon size={24} color={icon} className="text-gray-600 dark:text-gray-300" />
+      <Icon size={24} color={colors.icon} className="text-gray-600 dark:text-gray-300" />
       <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400">{label}</Text>
       <Text className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{value}</Text>
     </View>

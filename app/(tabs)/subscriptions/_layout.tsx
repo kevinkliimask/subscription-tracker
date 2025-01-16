@@ -2,11 +2,11 @@ import { Stack } from 'expo-router';
 import { Pencil } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 
-import { mockSubscriptions } from '~/app/mock/data';
 import { useColors } from '~/hooks/useColors';
+import { mockSubscriptions } from '~/mock/data';
 
 export default function SubscriptionsLayout() {
-  const { icon } = useColors();
+  const { colors } = useColors();
 
   return (
     <Stack>
@@ -19,9 +19,10 @@ export default function SubscriptionsLayout() {
             'Subscription',
           headerRight: () => (
             <TouchableOpacity className="mr-4">
-              <Pencil size={24} color={icon} />
+              <Pencil size={24} color={colors.icon} />
             </TouchableOpacity>
           ),
+          headerBackTitle: 'Back',
         })}
       />
     </Stack>
