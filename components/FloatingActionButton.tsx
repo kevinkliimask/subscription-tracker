@@ -12,7 +12,7 @@ export default function FloatingActionButton({
 }: FloatingActionButtonProps) {
   return (
     <Pressable
-      className="bg-theme-blue absolute bottom-4 right-4 h-16 w-16 items-center justify-center rounded-full shadow-lg"
+      className="absolute bottom-4 right-4 h-16 w-16 items-center justify-center rounded-full bg-theme-blue shadow-lg"
       onPress={onPress}>
       {icon}
     </Pressable>

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View, Text } from 'react-native';
@@ -47,6 +48,7 @@ const CATEGORY_OPTIONS = CATEGORIES.map((category) => ({
 
 export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     control,
@@ -69,9 +71,11 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
         price: parseFloat(data.price),
         startDate: data.startDate.toISOString(),
         endDate: data.endDate?.toISOString(),
-        logoUrl: 'https://placehold.co/400x400',
+        logoUrl: 'private/netflix.webp',
         isActive: true,
       });
+      // Invalidate and refetch subscriptions
+      await queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
       onSubmit();
     } catch (error) {
       console.error('Error adding subscription:', error);
@@ -83,7 +87,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
   return (
     <View className="flex gap-4 rounded-2xl bg-white p-4 shadow-lg">
       <View>
-        <Text className="mb-2 text-sm font-medium text-gray-900">Name</Text>
+        <Text className="mb-2 font-medium text-gray-900">Name</Text>
         <Controller
           control={control}
           name="name"
@@ -104,7 +108,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
 
       <View className="flex flex-row gap-4">
         <View className="flex-[3]">
-          <Text className="mb-2 text-sm font-medium text-gray-900">Price</Text>
+          <Text className="mb-2 font-medium text-gray-900">Price</Text>
           <Controller
             control={control}
             name="price"
@@ -125,7 +129,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
         </View>
 
         <View className="flex-1">
-          <Text className="mb-2 text-sm font-medium text-gray-900">Currency</Text>
+          <Text className="mb-2 font-medium text-gray-900">Currency</Text>
           <Controller
             control={control}
             name="currency"
@@ -147,7 +151,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
       </View>
 
       <View>
-        <Text className="mb-2 text-sm font-medium text-gray-900">Category (optional)</Text>
+        <Text className="mb-2 font-medium text-gray-900">Category (optional)</Text>
         <Controller
           control={control}
           name="category"
@@ -170,7 +174,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
       </View>
 
       <View>
-        <Text className="mb-2 text-sm font-medium text-gray-900">Billing Cycle</Text>
+        <Text className="mb-2 font-medium text-gray-900">Billing Cycle</Text>
         <Controller
           control={control}
           name="billingCycle"
@@ -192,7 +196,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
 
       <View className="flex flex-row gap-4">
         <View className="flex-1">
-          <Text className="mb-2 text-sm font-medium text-gray-900">Start Date</Text>
+          <Text className="mb-2 font-medium text-gray-900">Start Date</Text>
           <Controller
             control={control}
             name="startDate"
@@ -208,7 +212,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
         </View>
 
         <View className="flex-1">
-          <Text className="mb-2 text-sm font-medium text-gray-700">End Date (optional)</Text>
+          <Text className="mb-2 font-medium text-gray-700">End Date (optional)</Text>
           <Controller
             control={control}
             name="endDate"
@@ -230,7 +234,7 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
       </View>
 
       <View>
-        <Text className="mb-2 text-sm font-medium text-gray-900">Description (optional)</Text>
+        <Text className="mb-2 font-medium text-gray-900">Description (optional)</Text>
         <Controller
           control={control}
           name="description"

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '~/types/database.types';
 import { Subscription } from '~/types/subscription';
 import { objectToSnakeCase } from '~/utils/case';
+import { getSignedLogoUrl } from '~/utils/storage';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -22,7 +23,7 @@ export async function addSubscription(subscription: Omit<Subscription, 'id'>) {
     .from('subscriptions')
     .insert([objectToSnakeCase(subscription)])
     .select(
-      'name,description,logoUrl:logo_url,category,price,currency,billingCycle:billing_cycle,startDate:start_date,endDate:end_date,isActive:is_active'
+      'id,name,description,logoUrl:logo_url,category,price,currency,billingCycle:billing_cycle,startDate:start_date,endDate:end_date,isActive:is_active'
     )
     .single();
 
@@ -30,5 +31,31 @@ export async function addSubscription(subscription: Omit<Subscription, 'id'>) {
     throw error;
   }
 
-  return data as Subscription;
+  return {
+    ...data,
+    signedLogoUrl: await getSignedLogoUrl(data.logoUrl),
+  } as Subscription;
+}
+
+export async function getSubscriptions() {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select(
+      'id,name,description,logoUrl:logo_url,category,price,currency,billingCycle:billing_cycle,startDate:start_date,endDate:end_date,isActive:is_active'
+    )
+    .order('name');
+
+  if (error) {
+    throw error;
+  }
+
+  // Transform the data to include signed URLs
+  const subscriptionsWithUrls = await Promise.all(
+    data.map(async (subscription) => ({
+      ...subscription,
+      signedLogoUrl: await getSignedLogoUrl(subscription.logoUrl),
+    }))
+  );
+
+  return subscriptionsWithUrls as Subscription[];
 }

@@ -11,7 +11,7 @@ export type Database = {
           currency: string;
           description: string | null;
           end_date: string | null;
-          id: number;
+          id: string;
           is_active: boolean;
           logo_url: string | null;
           name: string;
@@ -27,7 +27,7 @@ export type Database = {
           currency: string;
           description?: string | null;
           end_date?: string | null;
-          id?: number;
+          id?: string;
           is_active: boolean;
           logo_url?: string | null;
           name: string;
@@ -43,7 +43,7 @@ export type Database = {
           currency?: string;
           description?: string | null;
           end_date?: string | null;
-          id?: number;
+          id?: string;
           is_active?: boolean;
           logo_url?: string | null;
           name?: string;

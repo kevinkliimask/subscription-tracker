@@ -9,7 +9,7 @@ type TextInputProps = ComponentProps<typeof RNTextInput> & {
 export function TextInput({ className, ...props }: TextInputProps) {
   return (
     <RNTextInput
-      className={twMerge('rounded-xl bg-gray-100 p-3 text-sm text-gray-900', className)}
+      className={twMerge('rounded-xl bg-gray-100 p-3 text-gray-900', className)}
       placeholderTextColor="#6b7280"
       {...props}
     />

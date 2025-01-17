@@ -1,8 +1,9 @@
 export type Subscription = {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   logoUrl?: string;
+  signedLogoUrl?: string;
   category?: string;
   price: number;
   currency: string;

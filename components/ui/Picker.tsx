@@ -52,7 +52,7 @@ export function Picker({
     <>
       <View className="relative">
         <Pressable onPress={handlePress} className="rounded-xl bg-gray-100 p-3">
-          <Text className={cn('text-sm', !selectedOption?.label && 'text-gray-500')}>
+          <Text className={cn(!selectedOption?.label && 'text-gray-500')}>
             {selectedOption?.label || placeholder || 'Select an option'}
           </Text>
         </Pressable>

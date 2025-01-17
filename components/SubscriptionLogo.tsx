@@ -15,7 +15,6 @@ const SubscriptionLogo = ({ name, logoUrl, size = 48 }: SubscriptionLogoProps) =
         source={{ uri: logoUrl }}
         style={{ width: size, height: size, borderRadius: 8 }}
         cachePolicy="memory-disk"
-        transition={200}
         contentFit="cover"
       />
     );
