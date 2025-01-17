@@ -3,6 +3,8 @@ import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { Text, Pressable, View, Platform } from 'react-native';
 
+import { cn } from '~/utils/cn';
+
 type DateTimePickerProps = {
   value: Date | null;
   onChange: (date: Date | null) => void;
@@ -36,7 +38,7 @@ export function DateTimePicker({
     return (
       <View className="justify-center">
         <View pointerEvents="none" className="absolute z-10 w-full rounded-xl bg-gray-100 p-3">
-          <Text className={value ? '' : 'text-gray-500'}>
+          <Text className={cn(value ? '' : 'text-gray-500', 'text-sm')}>
             {value ? value.toLocaleDateString() : placeholder}
           </Text>
         </View>
@@ -56,7 +58,7 @@ export function DateTimePicker({
     <>
       <View className="relative">
         <Pressable onPress={() => setShow(true)} className="rounded-xl bg-gray-100 p-3">
-          <Text className={value ? '' : 'text-gray-500'}>
+          <Text className={cn(value ? '' : 'text-gray-500', 'text-sm')}>
             {value ? value.toLocaleDateString() : placeholder}
           </Text>
         </Pressable>

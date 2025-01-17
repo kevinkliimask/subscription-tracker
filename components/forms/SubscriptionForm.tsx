@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { z } from 'zod';
 
+import { Button } from '~/components/ui/Button';
 import { DateTimePicker } from '~/components/ui/DateTimePicker';
 import { Picker } from '~/components/ui/Picker';
 import { TextInput } from '~/components/ui/TextInput';
+import { addSubscription } from '~/utils/supabase';
 
 const subscriptionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -43,6 +46,8 @@ const CATEGORY_OPTIONS = CATEGORIES.map((category) => ({
 }));
 
 export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -55,6 +60,25 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
       startDate: new Date(),
     },
   });
+
+  const handleFormSubmit = async (data: FormData) => {
+    try {
+      setIsSubmitting(true);
+      await addSubscription({
+        ...data,
+        price: parseFloat(data.price),
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        logoUrl: 'https://placehold.co/400x400',
+        isActive: true,
+      });
+      onSubmit();
+    } catch (error) {
+      console.error('Error adding subscription:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View className="flex gap-4 rounded-2xl bg-white p-4 shadow-lg">
@@ -228,11 +252,12 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
         />
       </View>
 
-      <Pressable
-        onPress={handleSubmit(onSubmit)}
-        className="bg-theme-blue mt-4 rounded-xl p-4 active:opacity-80">
+      <Button
+        onPress={handleSubmit(handleFormSubmit)}
+        isLoading={isSubmitting}
+        className="mt-4 rounded-xl bg-theme-blue p-4 active:opacity-80">
         <Text className="text-center font-semibold text-white">Add Subscription</Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

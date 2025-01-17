@@ -1,5 +1,5 @@
 export type Subscription = {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   logoUrl?: string;
@@ -7,7 +7,7 @@ export type Subscription = {
   price: number;
   currency: string;
   billingCycle: 'week' | 'month' | 'quarter' | 'year';
-  startDate: Date;
-  endDate?: Date;
+  startDate: string;
+  endDate?: string;
   isActive: boolean;
 };

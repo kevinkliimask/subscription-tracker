@@ -15,7 +15,7 @@ export default function SubscriptionsLayout() {
         name="[id]"
         options={({ route }) => ({
           title:
-            mockSubscriptions.find((sub) => sub.id === (route.params as { id: string }).id)?.name ??
+            mockSubscriptions.find((sub) => sub.id === (route.params as { id: number }).id)?.name ??
             'Subscription',
           headerRight: () => (
             <TouchableOpacity className="mr-4">
