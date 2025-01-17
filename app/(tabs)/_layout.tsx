@@ -17,7 +17,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Logout',
           tabBarIcon: ({ color }) => <Cog size={28} color={color} />,
         }}
       />
