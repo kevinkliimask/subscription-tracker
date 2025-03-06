@@ -143,6 +143,23 @@ export async function updateSubscription(
   return data as Subscription;
 }
 
+export async function deleteSubscription(id: string, logoBucketPath?: string) {
+  try {
+    // Delete the image from storage if it exists
+    if (logoBucketPath) {
+      await deleteSubscriptionImage(logoBucketPath);
+    }
+
+    // Delete the subscription from the database
+    const { error } = await supabase.from('subscriptions').delete().eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting subscription:', error);
+    throw error;
+  }
+}
+
 export async function getSubscriptions() {
   const { data, error } = await supabase
     .from('subscriptions')

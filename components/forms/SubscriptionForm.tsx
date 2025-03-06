@@ -1,13 +1,13 @@
 import { Controller, useForm } from 'react-hook-form';
 import { ImagePickerAsset } from 'expo-image-picker';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 
-import { addSubscription, updateSubscription } from '~/utils/supabase';
+import { addSubscription, updateSubscription, deleteSubscription } from '~/utils/supabase';
 import { Button } from '~/components/ui/Button';
 import { DateTimePicker } from '~/components/ui/DateTimePicker';
 import { FileUploader } from '~/components/ui/FileUploader';
@@ -61,6 +61,7 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const queryClient = useQueryClient();
   const navigation = useNavigation();
+  const router = useRouter();
 
   const {
     control,
@@ -116,6 +117,38 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
   const handleImageSelect = (file: ImagePickerAsset | undefined) => {
     setSelectedImage(file);
     setIsImageDeleted(!file);
+  };
+
+  const handleDelete = () => {
+    if (!subscription) return;
+
+    Alert.alert(
+      'Delete Subscription',
+      'Are you sure you want to delete this subscription? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsSubmitting(true);
+              await deleteSubscription(subscription.id, subscription.logoBucketPath);
+              await queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+              router.replace('/subscriptions');
+            } catch (error) {
+              console.error('Error deleting subscription:', error);
+              alert(`Failed to delete subscription. ${error}`);
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -300,6 +333,15 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
           {mode === 'edit' ? 'Update Subscription' : 'Add Subscription'}
         </Text>
       </Button>
+
+      {mode === 'edit' && (
+        <Button
+          onPress={handleDelete}
+          isLoading={isSubmitting}
+          className="mt-2 rounded-xl bg-red-500 p-4 active:opacity-80">
+          <Text className="text-center font-semibold text-white">Delete Subscription</Text>
+        </Button>
+      )}
     </View>
   );
 }
