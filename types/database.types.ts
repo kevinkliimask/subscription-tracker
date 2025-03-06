@@ -13,6 +13,7 @@ export type Database = {
           end_date: string | null;
           id: string;
           is_active: boolean;
+          logo_bucket_path: string | null;
           logo_url: string | null;
           name: string;
           price: number;
@@ -29,6 +30,7 @@ export type Database = {
           end_date?: string | null;
           id?: string;
           is_active: boolean;
+          logo_bucket_path?: string | null;
           logo_url?: string | null;
           name: string;
           price: number;
@@ -45,6 +47,7 @@ export type Database = {
           end_date?: string | null;
           id?: string;
           is_active?: boolean;
+          logo_bucket_path?: string | null;
           logo_url?: string | null;
           name?: string;
           price?: number;

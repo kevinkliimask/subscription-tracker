@@ -1,7 +1,8 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Image as ImageIcon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import type { ImagePickerAsset } from 'expo-image-picker';
 
 const ALLOWED_FILE_TYPES = [
   'image/jpeg',
@@ -15,12 +16,22 @@ const ALLOWED_FILE_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 type FileUploaderProps = {
-  onFileSelect: (file: ImagePicker.ImagePickerAsset | null) => void;
+  onFileSelect: (file: ImagePickerAsset | undefined, oldImageUrl?: string) => void;
+  initialImageUrl?: string;
   error?: string;
 };
 
-export function FileUploader({ onFileSelect, error }: FileUploaderProps) {
-  const [preview, setPreview] = useState<string | null>(null);
+export function FileUploader({ onFileSelect, initialImageUrl, error }: FileUploaderProps) {
+  const [preview, setPreview] = useState<string | null>(initialImageUrl || null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>(initialImageUrl);
+
+  useEffect(() => {
+    // Update preview and current image URL if initialImageUrl changes
+    if (initialImageUrl) {
+      setPreview(initialImageUrl);
+      setCurrentImageUrl(initialImageUrl);
+    }
+  }, [initialImageUrl]);
 
   const validateFile = (fileType: string, fileSize: number) => {
     if (!ALLOWED_FILE_TYPES.includes(fileType)) {
@@ -46,11 +57,15 @@ export function FileUploader({ onFileSelect, error }: FileUploaderProps) {
         const asset = result.assets[0];
         try {
           validateFile(asset.mimeType || 'image/jpeg', asset.fileSize || 0);
+
           setPreview(asset.uri);
-          onFileSelect(asset);
+          // Pass both the new file and the old URL to parent
+          onFileSelect(asset, currentImageUrl);
+          setCurrentImageUrl(undefined);
         } catch (error) {
           if (error instanceof Error) {
-            onFileSelect(null);
+            setPreview(null);
+            onFileSelect(undefined);
             alert(error.message);
           }
         }
@@ -63,7 +78,9 @@ export function FileUploader({ onFileSelect, error }: FileUploaderProps) {
 
   const removeImage = () => {
     setPreview(null);
-    onFileSelect(null);
+    // Pass undefined for new file and the old URL to parent
+    onFileSelect(undefined, currentImageUrl);
+    setCurrentImageUrl(undefined);
   };
 
   return (
@@ -72,7 +89,7 @@ export function FileUploader({ onFileSelect, error }: FileUploaderProps) {
       <View className="flex-row items-center justify-center gap-4">
         {preview ? (
           <View className="relative">
-            <Image source={{ uri: preview }} className="h-16 w-16 rounded-lg" />
+            <Image source={{ uri: preview }} className="h-24 w-24 rounded-lg" />
             <TouchableOpacity
               onPress={removeImage}
               className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1">

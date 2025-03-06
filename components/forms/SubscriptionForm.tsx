@@ -7,11 +7,12 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 
-import { addSubscription } from '~/utils/supabase';
+import { addSubscription, updateSubscription } from '~/utils/supabase';
 import { Button } from '~/components/ui/Button';
 import { DateTimePicker } from '~/components/ui/DateTimePicker';
 import { FileUploader } from '~/components/ui/FileUploader';
 import { Picker } from '~/components/ui/Picker';
+import { Subscription } from '~/types/subscription';
 import { TextInput } from '~/components/ui/TextInput';
 
 const subscriptionSchema = z.object({
@@ -49,9 +50,15 @@ const CATEGORY_OPTIONS = CATEGORIES.map((category) => ({
   value: category,
 }));
 
-export default function SubscriptionForm() {
+type SubscriptionFormProps = {
+  mode?: 'create' | 'edit';
+  subscription?: Subscription;
+};
+
+export default function SubscriptionForm({ mode = 'create', subscription }: SubscriptionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<ImagePickerAsset | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ImagePickerAsset | undefined>(undefined);
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
   const queryClient = useQueryClient();
   const navigation = useNavigation();
 
@@ -62,39 +69,58 @@ export default function SubscriptionForm() {
   } = useForm<FormData>({
     resolver: zodResolver(subscriptionSchema),
     defaultValues: {
-      billingCycle: 'month',
-      currency: 'eur',
-      startDate: new Date(),
+      name: subscription?.name ?? '',
+      price: subscription?.price.toString() ?? '',
+      description: subscription?.description ?? '',
+      category: subscription?.category ?? undefined,
+      billingCycle: subscription?.billingCycle ?? 'month',
+      currency: (subscription?.currency as 'eur' | 'usd') ?? 'eur',
+      startDate: subscription?.startDate ? new Date(subscription.startDate) : new Date(),
+      endDate: subscription?.endDate ? new Date(subscription.endDate) : undefined,
     },
   });
 
   const handleFormSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
-      await addSubscription(
-        {
-          ...data,
-          price: parseFloat(data.price),
-          startDate: data.startDate.toISOString(),
-          endDate: data.endDate?.toISOString(),
-          isActive: true,
-        },
-        selectedImage
-      );
+      const subscriptionData = {
+        ...data,
+        price: parseFloat(data.price),
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        isActive: true,
+      };
+
+      if (mode === 'edit' && subscription) {
+        await updateSubscription(
+          subscription.id,
+          subscriptionData,
+          selectedImage,
+          isImageDeleted || !!selectedImage
+        );
+      } else {
+        await addSubscription(subscriptionData, selectedImage);
+      }
+
       // Invalidate and refetch subscriptions
       await queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
       navigation.goBack();
     } catch (error) {
-      console.error('Error adding subscription:', error);
-      alert(`Failed to add subscription. ${error}`);
+      console.error('Error saving subscription:', error);
+      alert(`Failed to ${mode} subscription. ${error}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleImageSelect = (file: ImagePickerAsset | undefined) => {
+    setSelectedImage(file);
+    setIsImageDeleted(!file);
+  };
+
   return (
     <View className="flex gap-4 rounded-2xl bg-white p-4 shadow-lg">
-      <FileUploader onFileSelect={setSelectedImage} />
+      <FileUploader onFileSelect={handleImageSelect} initialImageUrl={subscription?.logoUrl} />
 
       <View>
         <Text className="mb-2 font-medium text-gray-900">Name</Text>
@@ -270,7 +296,9 @@ export default function SubscriptionForm() {
         onPress={handleSubmit(handleFormSubmit)}
         isLoading={isSubmitting}
         className="mt-4 rounded-xl bg-theme-blue p-4 active:opacity-80">
-        <Text className="text-center font-semibold text-white">Add Subscription</Text>
+        <Text className="text-center font-semibold text-white">
+          {mode === 'edit' ? 'Update Subscription' : 'Add Subscription'}
+        </Text>
       </Button>
     </View>
   );

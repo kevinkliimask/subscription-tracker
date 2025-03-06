@@ -12,6 +12,14 @@ const AuthLayout = () => {
           headerTitleAlign: 'center',
         }}
       />
+      <Stack.Screen
+        name="subscriptions/edit"
+        options={{
+          title: 'Edit Subscription',
+          headerBackTitle: 'Cancel',
+          headerTitleAlign: 'center',
+        }}
+      />
     </Stack>
   );
 };

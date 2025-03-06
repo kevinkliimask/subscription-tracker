@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Pencil } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 
@@ -7,6 +7,7 @@ import { mockSubscriptions } from '~/mock/data';
 
 export default function SubscriptionsLayout() {
   const { colors } = useColors();
+  const router = useRouter();
 
   return (
     <Stack>
@@ -18,7 +19,10 @@ export default function SubscriptionsLayout() {
             mockSubscriptions.find((sub) => sub.id === (route.params as { id: string }).id)?.name ??
             'Subscription',
           headerRight: () => (
-            <TouchableOpacity className="mr-4">
+            <TouchableOpacity 
+              className="mr-4"
+              onPress={() => router.push(`/subscriptions/edit?id=${(route.params as { id: string }).id}`)}
+            >
               <Pencil size={24} color={colors.icon} />
             </TouchableOpacity>
           ),

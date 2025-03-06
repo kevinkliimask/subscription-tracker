@@ -1,9 +1,29 @@
-import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+
 import { supabase } from './supabase';
 
-export async function uploadSubscriptionImage(file: ImagePickerAsset, userId: string) {
-  if (!file) return undefined;
+export type UploadResult = {
+  url: string;
+  bucketPath: string;
+};
+
+export async function deleteSubscriptionImage(bucketPath: string) {
+  try {
+    const { error } = await supabase.storage.from('subscription-logos').remove([bucketPath]);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    throw error;
+  }
+}
+
+export async function uploadSubscriptionImage(
+  file: ImagePickerAsset,
+  userId: string
+): Promise<UploadResult> {
+  if (!file) throw new Error('No file provided');
 
   try {
     // Get file extension from mime type
@@ -29,7 +49,12 @@ export async function uploadSubscriptionImage(file: ImagePickerAsset, userId: st
       .from('subscription-logos')
       .createSignedUrl(data.path, 315576000); // 10 years in seconds
 
-    return signedUrl?.signedUrl;
+    if (!signedUrl?.signedUrl) throw new Error('Failed to get signed URL');
+
+    return {
+      url: signedUrl.signedUrl,
+      bucketPath: data.path,
+    };
   } catch (error) {
     console.error('Error uploading image:', error);
     throw error;

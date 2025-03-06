@@ -1,4 +1,3 @@
-import { useNavigation } from 'expo-router';
 import { View } from 'react-native';
 
 import SubscriptionForm from '~/components/forms/SubscriptionForm';
