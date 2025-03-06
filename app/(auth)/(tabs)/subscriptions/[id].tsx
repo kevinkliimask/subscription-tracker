@@ -52,7 +52,7 @@ const SubscriptionDetails = () => {
     );
   }
 
-  const { name, description, price, currency, signedLogoUrl, startDate, billingCycle } =
+  const { name, description, price, currency, logoUrl, startDate, billingCycle } =
     subscription;
 
   const InfoLabel = ({
@@ -75,7 +75,7 @@ const SubscriptionDetails = () => {
     <ScrollView className="flex-1 bg-white dark:bg-gray-900">
       {/* Header Section */}
       <View className="items-center p-4">
-        <SubscriptionLogo name={name} logoUrl={signedLogoUrl} size={96} />
+        <SubscriptionLogo name={name} logoUrl={logoUrl} size={96} />
         <Text className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">{name}</Text>
         {description && (
           <Text className="mt-2 text-center text-gray-500 dark:text-gray-400">{description}</Text>
@@ -107,7 +107,7 @@ const SubscriptionDetails = () => {
         <View className="mt-4 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800">
           <View className="flex-row items-center justify-between py-3">
             <View className="flex-row items-center">
-              <SubscriptionLogo name={name} logoUrl={signedLogoUrl} size={40} />
+              <SubscriptionLogo name={name} logoUrl={logoUrl} size={40} />
               <View className="ml-3">
                 <Text className="font-semibold text-gray-900 dark:text-white">{name}</Text>
                 <Text className="text-xs text-gray-500 dark:text-gray-400">

@@ -3,7 +3,7 @@ export type Subscription = {
   name: string;
   description?: string;
   logoUrl?: string;
-  signedLogoUrl?: string;
+  logoBucketPath?: string;
   category?: string;
   price: number;
   currency: string;

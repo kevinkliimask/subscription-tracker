@@ -1,31 +1,25 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { supabase } from './supabase';
 
-export async function getSignedLogoUrl(logoUrl: string | undefined | null) {
-  if (!logoUrl) return undefined;
+export async function uploadSubscriptionImage(file: any, userId: string) {
+  if (!file) return undefined;
 
   try {
-    // Try to get from cache first
-    const cachedUrl = await AsyncStorage.getItem(`logo_url_${logoUrl}`);
-    if (cachedUrl) {
-      return cachedUrl;
-    }
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
-    // If not in cache, fetch from Supabase
-    const { data } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('subscription-logos')
-      .createSignedUrl(logoUrl, 31_536_000); // 1 year
+      .upload(fileName, file);
 
-    if (data?.signedUrl) {
-      // Cache the URL
-      await AsyncStorage.setItem(`logo_url_${logoUrl}`, data.signedUrl);
-      return data.signedUrl;
-    }
+    if (error) throw error;
 
-    return undefined;
+    const { data: urlData } = await supabase.storage
+      .from('subscription-logos')
+      .createSignedUrl(data.path, 315576000); // 10 years in seconds
+
+    return urlData?.signedUrl;
   } catch (error) {
-    console.error('Error fetching signed URL:', error);
+    console.error('Error uploading image:', error);
     return undefined;
   }
 }

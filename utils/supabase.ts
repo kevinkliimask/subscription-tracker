@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '~/types/database.types';
 import { Subscription } from '~/types/subscription';
 import { objectToSnakeCase } from '~/utils/case';
-import { getSignedLogoUrl } from '~/utils/storage';
+import { uploadSubscriptionImage } from '~/utils/storage';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -18,10 +18,27 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-export async function addSubscription(subscription: Omit<Subscription, 'id'>) {
+export async function addSubscription(subscription: Omit<Subscription, 'id'>, imageFile?: any) {
+  // First, handle image upload if provided
+  let logoUrl: string | undefined;
+  if (imageFile) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not found');
+
+    logoUrl = await uploadSubscriptionImage(imageFile, user.id);
+  }
+
+  // Create subscription with the logo URL if we have one
+  const subscriptionData = {
+    ...subscription,
+    logoUrl,
+  };
+
   const { data, error } = await supabase
     .from('subscriptions')
-    .insert([objectToSnakeCase(subscription)])
+    .insert([objectToSnakeCase(subscriptionData)])
     .select(
       'id,name,description,logoUrl:logo_url,category,price,currency,billingCycle:billing_cycle,startDate:start_date,endDate:end_date,isActive:is_active'
     )
@@ -31,10 +48,7 @@ export async function addSubscription(subscription: Omit<Subscription, 'id'>) {
     throw error;
   }
 
-  return {
-    ...data,
-    signedLogoUrl: await getSignedLogoUrl(data.logoUrl),
-  } as Subscription;
+  return data as Subscription;
 }
 
 export async function getSubscriptions() {
@@ -49,13 +63,5 @@ export async function getSubscriptions() {
     throw error;
   }
 
-  // Transform the data to include signed URLs
-  const subscriptionsWithUrls = await Promise.all(
-    data.map(async (subscription) => ({
-      ...subscription,
-      signedLogoUrl: await getSignedLogoUrl(subscription.logoUrl),
-    }))
-  );
-
-  return subscriptionsWithUrls as Subscription[];
+  return data as Subscription[];
 }
