@@ -1,15 +1,18 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { ImagePickerAsset } from 'expo-image-picker';
+import { useNavigation } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { View, Text } from 'react-native';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
 
+import { addSubscription } from '~/utils/supabase';
 import { Button } from '~/components/ui/Button';
 import { DateTimePicker } from '~/components/ui/DateTimePicker';
+import { FileUploader } from '~/components/ui/FileUploader';
 import { Picker } from '~/components/ui/Picker';
 import { TextInput } from '~/components/ui/TextInput';
-import { addSubscription } from '~/utils/supabase';
 
 const subscriptionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -46,9 +49,11 @@ const CATEGORY_OPTIONS = CATEGORIES.map((category) => ({
   value: category,
 }));
 
-export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void }) {
+export default function SubscriptionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<ImagePickerAsset | null>(null);
   const queryClient = useQueryClient();
+  const navigation = useNavigation();
 
   const {
     control,
@@ -66,19 +71,22 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
   const handleFormSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
-      await addSubscription({
-        ...data,
-        price: parseFloat(data.price),
-        startDate: data.startDate.toISOString(),
-        endDate: data.endDate?.toISOString(),
-        logoUrl: 'private/netflix.webp',
-        isActive: true,
-      });
+      await addSubscription(
+        {
+          ...data,
+          price: parseFloat(data.price),
+          startDate: data.startDate.toISOString(),
+          endDate: data.endDate?.toISOString(),
+          isActive: true,
+        },
+        selectedImage
+      );
       // Invalidate and refetch subscriptions
       await queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      onSubmit();
+      navigation.goBack();
     } catch (error) {
       console.error('Error adding subscription:', error);
+      alert(`Failed to add subscription. ${error}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -86,6 +94,8 @@ export default function SubscriptionForm({ onSubmit }: { onSubmit: () => void })
 
   return (
     <View className="flex gap-4 rounded-2xl bg-white p-4 shadow-lg">
+      <FileUploader onFileSelect={setSelectedImage} />
+
       <View>
         <Text className="mb-2 font-medium text-gray-900">Name</Text>
         <Controller
