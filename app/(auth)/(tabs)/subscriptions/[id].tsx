@@ -1,18 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
-import {
-  CalendarCheck2,
-  CalendarClock,
-  DollarSign,
-  LucideIcon,
-  Plus,
-  RefreshCw,
-} from 'lucide-react-native';
+import { CalendarCheck2, CalendarClock, DollarSign, LucideIcon } from 'lucide-react-native';
 import { View, Text, ScrollView } from 'react-native';
 
-import SubscriptionLogo from '~/components/SubscriptionLogo';
-import { useColors } from '~/hooks/useColors';
+import {
+  getNextBillingDate,
+  getTimeUntilNextPayment,
+  getPaymentDates,
+  formatLocalDate,
+} from '~/utils/date';
 import { getSubscriptions } from '~/utils/supabase';
+import { useColors } from '~/hooks/useColors';
+import PaymentHistoryItem from '~/components/PaymentHistoryItem';
+import SubscriptionLogo from '~/components/SubscriptionLogo';
 
 const SubscriptionDetails = () => {
   const { colors } = useColors();
@@ -52,8 +52,10 @@ const SubscriptionDetails = () => {
     );
   }
 
-  const { name, description, price, currency, logoUrl, startDate, billingCycle } =
-    subscription;
+  const { name, description, price, currency, logoUrl, startDate, billingCycle } = subscription;
+
+  const nextBillingDate = getNextBillingDate(startDate, billingCycle);
+  const paymentDates = getPaymentDates(startDate, billingCycle);
 
   const InfoLabel = ({
     icon: Icon,
@@ -62,17 +64,19 @@ const SubscriptionDetails = () => {
   }: {
     icon: LucideIcon;
     label: string;
-    value: string;
+    value: string | React.ReactNode;
   }) => (
     <View className="items-center px-4">
       <Icon size={24} color={colors.icon} className="text-gray-600 dark:text-gray-300" />
       <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400">{label}</Text>
-      <Text className="mt-1 font-semibold text-gray-900 dark:text-white">{value}</Text>
+      <Text className="mt-1 text-center font-semibold leading-6 text-gray-900 dark:text-white">
+        {value}
+      </Text>
     </View>
   );
 
   return (
-    <ScrollView className="flex-1 bg-white dark:bg-gray-900">
+    <ScrollView className="flex-1 dark:bg-gray-900">
       {/* Header Section */}
       <View className="items-center p-4">
         <SubscriptionLogo name={name} logoUrl={logoUrl} size={96} />
@@ -88,7 +92,7 @@ const SubscriptionDetails = () => {
         <InfoLabel
           icon={CalendarCheck2}
           label="Next Payment"
-          value={new Date(startDate).toLocaleDateString()}
+          value={`${formatLocalDate(new Date(nextBillingDate))}\n${getTimeUntilNextPayment(nextBillingDate)}`}
         />
         <InfoLabel icon={DollarSign} label="Amount" value={`${currency} ${price.toFixed(2)}`} />
       </View>
@@ -97,33 +101,41 @@ const SubscriptionDetails = () => {
       <View className="p-4">
         <View className="flex-row items-center justify-between">
           <Text className="text-lg font-semibold text-gray-900 dark:text-white">Payments</Text>
-          <View className="flex-row gap-2">
-            <RefreshCw size={20} className="text-gray-600 dark:text-gray-300" />
-            <Plus size={20} className="text-gray-600 dark:text-gray-300" />
-          </View>
-        </View>
-
-        {/* Payments Placeholder */}
-        <View className="mt-4 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800">
-          <View className="flex-row items-center justify-between py-3">
-            <View className="flex-row items-center">
-              <SubscriptionLogo name={name} logoUrl={logoUrl} size={40} />
-              <View className="ml-3">
-                <Text className="font-semibold text-gray-900 dark:text-white">{name}</Text>
-                <Text className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date().toLocaleDateString()}
-                </Text>
-              </View>
-            </View>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-gray-600 dark:text-gray-300">
+              Total ({paymentDates.length} payments)
+            </Text>
             <Text className="font-semibold text-gray-900 dark:text-white">
-              {currency} {price.toFixed(2)}
+              {currency} {(price * paymentDates.length).toFixed(2)}
             </Text>
           </View>
+          {/* <View className="flex-row gap-2">
+            <RefreshCw size={20} className="text-gray-600 dark:text-gray-300" />
+            <Plus size={20} className="text-gray-600 dark:text-gray-300" />
+          </View> */}
+        </View>
 
+        {/* Payments History */}
+        {paymentDates.length > 0 && (
+          <View className="mt-4 flex-col gap-3">
+            {paymentDates.map((date) => (
+              <PaymentHistoryItem
+                key={date.toISOString()}
+                name={name}
+                logoUrl={logoUrl}
+                currency={currency}
+                price={price}
+                date={date}
+              />
+            ))}
+          </View>
+        )}
+
+        {paymentDates.length === 0 && (
           <Text className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
             Previous payments will appear here
           </Text>
-        </View>
+        )}
       </View>
     </ScrollView>
   );

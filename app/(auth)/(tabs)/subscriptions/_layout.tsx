@@ -19,10 +19,10 @@ export default function SubscriptionsLayout() {
             mockSubscriptions.find((sub) => sub.id === (route.params as { id: string }).id)?.name ??
             'Subscription',
           headerRight: () => (
-            <TouchableOpacity 
-              className="mr-4"
-              onPress={() => router.push(`/subscriptions/edit?id=${(route.params as { id: string }).id}`)}
-            >
+            <TouchableOpacity
+              onPress={() =>
+                router.push(`/subscriptions/edit?id=${(route.params as { id: string }).id}`)
+              }>
               <Pencil size={24} color={colors.icon} />
             </TouchableOpacity>
           ),

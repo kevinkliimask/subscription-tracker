@@ -1,3 +1,5 @@
+export type BillingCycle = 'week' | 'month' | 'quarter' | 'year';
+
 export type Subscription = {
   id: string;
   name: string;
@@ -7,7 +9,7 @@ export type Subscription = {
   category?: string;
   price: number;
   currency: string;
-  billingCycle: 'week' | 'month' | 'quarter' | 'year';
+  billingCycle: BillingCycle;
   startDate: string;
   endDate?: string;
   isActive: boolean;
