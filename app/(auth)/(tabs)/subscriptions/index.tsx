@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlatList, View, Text, ActivityIndicator } from 'react-native';
+import React from 'react';
 
 import FloatingActionButton from '~/components/FloatingActionButton';
 import SubscriptionItem from '~/components/SubscriptionItem';
 import { getSubscriptions } from '~/utils/supabase';
+import { getNextBillingDate } from '~/utils/date';
 
 export default function Home() {
   const router = useRouter();
@@ -16,6 +18,16 @@ export default function Home() {
     queryKey: ['subscriptions'],
     queryFn: getSubscriptions,
   });
+
+  // Sort subscriptions by next payment date
+  const sortedSubscriptions = React.useMemo(() => {
+    if (!subscriptions) return [];
+    return [...subscriptions].sort((a, b) => {
+      const dateA = new Date(getNextBillingDate(a.startDate, a.billingCycle));
+      const dateB = new Date(getNextBillingDate(b.startDate, b.billingCycle));
+      return dateA.getTime() - dateB.getTime();
+    });
+  }, [subscriptions]);
 
   if (isLoading) {
     return (
@@ -37,7 +49,7 @@ export default function Home() {
   return (
     <>
       <FlatList
-        data={subscriptions}
+        data={sortedSubscriptions}
         renderItem={({ item }) => <SubscriptionItem subscription={item} />}
         keyExtractor={(item) => item.id}
         contentContainerClassName="p-4"

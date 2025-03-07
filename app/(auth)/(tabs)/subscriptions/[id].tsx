@@ -109,10 +109,6 @@ const SubscriptionDetails = () => {
               {currency} {(price * paymentDates.length).toFixed(2)}
             </Text>
           </View>
-          {/* <View className="flex-row gap-2">
-            <RefreshCw size={20} className="text-gray-600 dark:text-gray-300" />
-            <Plus size={20} className="text-gray-600 dark:text-gray-300" />
-          </View> */}
         </View>
 
         {/* Payments History */}
