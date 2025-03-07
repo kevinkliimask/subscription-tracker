@@ -1,21 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
-import { CalendarCheck2, CalendarClock, DollarSign, LucideIcon } from 'lucide-react-native';
 import { View, Text, ScrollView } from 'react-native';
 
-import {
-  getNextBillingDate,
-  getTimeUntilNextPayment,
-  getPaymentDates,
-  formatLocalDate,
-} from '~/utils/date';
 import { getSubscriptions } from '~/utils/supabase';
-import { useColors } from '~/hooks/useColors';
 import PaymentHistoryItem from '~/components/PaymentHistoryItem';
 import SubscriptionLogo from '~/components/SubscriptionLogo';
+import SubscriptionDetailsGrid from '~/components/SubscriptionDetailsGrid';
+import { getPaymentDates } from '~/utils/date';
 
 const SubscriptionDetails = () => {
-  const { colors } = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
     data: subscriptions,
@@ -52,28 +45,8 @@ const SubscriptionDetails = () => {
     );
   }
 
-  const { name, description, price, currency, logoUrl, startDate, billingCycle } = subscription;
-
-  const nextBillingDate = getNextBillingDate(startDate, billingCycle);
-  const paymentDates = getPaymentDates(startDate, billingCycle);
-
-  const InfoLabel = ({
-    icon: Icon,
-    label,
-    value,
-  }: {
-    icon: LucideIcon;
-    label: string;
-    value: string | React.ReactNode;
-  }) => (
-    <View className="items-center px-4">
-      <Icon size={24} color={colors.icon} className="text-gray-600 dark:text-gray-300" />
-      <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400">{label}</Text>
-      <Text className="mt-1 text-center font-semibold leading-6 text-gray-900 dark:text-white">
-        {value}
-      </Text>
-    </View>
-  );
+  const { name, description, price, currency, logoUrl, startDate } = subscription;
+  const paymentDates = getPaymentDates(startDate, subscription.billingCycle);
 
   return (
     <ScrollView className="flex-1 dark:bg-gray-900">
@@ -82,20 +55,11 @@ const SubscriptionDetails = () => {
         <SubscriptionLogo name={name} logoUrl={logoUrl} size={96} />
         <Text className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">{name}</Text>
         {description && (
-          <Text className="mt-2 text-center text-gray-500 dark:text-gray-400">{description}</Text>
+          <Text className="mt-2 text-gray-600 dark:text-gray-300">{description}</Text>
         )}
       </View>
 
-      {/* Billing Cycle Info */}
-      <View className="flex-row justify-around border-y border-gray-100 bg-gray-50 py-6 dark:border-gray-800 dark:bg-gray-800/50">
-        <InfoLabel icon={CalendarClock} label="Billing Cycle" value={`Every ${billingCycle}`} />
-        <InfoLabel
-          icon={CalendarCheck2}
-          label="Next Payment"
-          value={`${formatLocalDate(new Date(nextBillingDate))}\n${getTimeUntilNextPayment(nextBillingDate)}`}
-        />
-        <InfoLabel icon={DollarSign} label="Amount" value={`${currency} ${price.toFixed(2)}`} />
-      </View>
+      <SubscriptionDetailsGrid subscription={subscription} />
 
       {/* Payments Section */}
       <View className="p-4">
