@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { Pencil } from 'lucide-react-native';
+import { Pencil, User } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 
 import { useColors } from '~/hooks/useColors';
@@ -11,7 +11,17 @@ export default function SubscriptionsLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: 'Subscriptions' }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          title: 'Subscriptions',
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <User size={24} color={colors.icon} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <Stack.Screen
         name="[id]"
         options={({ route }) => ({

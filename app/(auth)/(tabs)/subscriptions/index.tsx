@@ -1,15 +1,21 @@
+import { FlatList, View, Text, ActivityIndicator } from 'react-native';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { FlatList, View, Text, ActivityIndicator } from 'react-native';
-import React from 'react';
 
+import { DeleteSubscriptionAlert } from '~/components/DeleteSubscriptionAlert';
+import { getNextBillingDate } from '~/utils/date';
+import { getSubscriptions } from '~/utils/supabase';
+import { Subscription } from '~/types/subscription';
 import FloatingActionButton from '~/components/FloatingActionButton';
 import SubscriptionItem from '~/components/SubscriptionItem';
-import { getSubscriptions } from '~/utils/supabase';
-import { getNextBillingDate } from '~/utils/date';
 
 export default function Home() {
   const router = useRouter();
+
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const {
     data: subscriptions,
     isLoading,
@@ -20,7 +26,7 @@ export default function Home() {
   });
 
   // Sort subscriptions by next payment date
-  const sortedSubscriptions = React.useMemo(() => {
+  const sortedSubscriptions = useMemo(() => {
     if (!subscriptions) return [];
     return [...subscriptions].sort((a, b) => {
       const dateA = new Date(getNextBillingDate(a.startDate, a.billingCycle));
@@ -32,7 +38,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#ffffff" />
         <Text className="mt-4 text-gray-500">Loading subscriptions...</Text>
       </View>
     );
@@ -48,11 +54,22 @@ export default function Home() {
 
   return (
     <>
+      {isDeleting && (
+        <View className="absolute inset-0 flex-1 items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text className="mt-4 text-white">Deleting subscription...</Text>
+        </View>
+      )}
       <FlatList
         data={sortedSubscriptions}
-        renderItem={({ item }) => <SubscriptionItem subscription={item} />}
+        renderItem={({ item }) => (
+          <SubscriptionItem
+            subscription={item}
+            onDeletePress={() => setSubscriptionToDelete(item)}
+          />
+        )}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4"
+        contentContainerClassName="p-4 gap-3"
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-8">
             <Text className="text-gray-500">No subscriptions yet</Text>
@@ -64,6 +81,15 @@ export default function Home() {
           router.push('/subscriptions/add');
         }}
       />
+      {subscriptionToDelete && (
+        <DeleteSubscriptionAlert
+          subscription={subscriptionToDelete}
+          show={!!subscriptionToDelete}
+          onDismiss={() => setSubscriptionToDelete(null)}
+          onSubmitStart={() => setIsDeleting(true)}
+          onSubmitEnd={() => setIsDeleting(false)}
+        />
+      )}
     </>
   );
 }

@@ -20,6 +20,13 @@ const AuthLayout = () => {
           headerTitleAlign: 'center',
         }}
       />
+      <Stack.Screen
+        name="settings"
+        options={{
+          headerBackTitle: 'Back',
+          title: 'Settings',
+        }}
+      />
     </Stack>
   );
 };

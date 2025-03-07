@@ -2,18 +2,20 @@ import { Controller, useForm } from 'react-hook-form';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { useNavigation, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { View, Text, Alert } from 'react-native';
+import { useState } from 'react';
+import { View, Text } from 'react-native';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState } from 'react';
 
-import { addSubscription, updateSubscription, deleteSubscription } from '~/utils/supabase';
-import { Button } from '~/components/ui/Button';
+import { addSubscription, updateSubscription } from '~/utils/supabase';
 import { DateTimePicker } from '~/components/ui/DateTimePicker';
+import { DeleteSubscriptionAlert } from '~/components/DeleteSubscriptionAlert';
 import { FileUploader } from '~/components/ui/FileUploader';
+import { GradientButton } from '~/components/ui/GradientButton';
 import { Picker } from '~/components/ui/Picker';
 import { Subscription } from '~/types/subscription';
 import { TextInput } from '~/components/ui/TextInput';
+import { Plus, Trash } from 'lucide-react-native';
 
 const subscriptionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -59,9 +61,9 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImagePickerAsset | undefined>(undefined);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const queryClient = useQueryClient();
   const navigation = useNavigation();
-  const router = useRouter();
 
   const {
     control,
@@ -121,34 +123,7 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
 
   const handleDelete = () => {
     if (!subscription) return;
-
-    Alert.alert(
-      'Delete Subscription',
-      'Are you sure you want to delete this subscription? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsSubmitting(true);
-              await deleteSubscription(subscription.id, subscription.logoBucketPath);
-              await queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-              router.replace('/subscriptions');
-            } catch (error) {
-              console.error('Error deleting subscription:', error);
-              alert(`Failed to delete subscription. ${error}`);
-            } finally {
-              setIsSubmitting(false);
-            }
-          },
-        },
-      ]
-    );
+    setShowDeleteAlert(true);
   };
 
   return (
@@ -325,22 +300,37 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
         />
       </View>
 
-      <Button
+      <GradientButton
         onPress={handleSubmit(handleFormSubmit)}
         isLoading={isSubmitting}
-        className="mt-4 rounded-xl bg-theme-blue p-4 active:opacity-80">
-        <Text className="text-center font-semibold text-white">
-          {mode === 'edit' ? 'Update Subscription' : 'Add Subscription'}
-        </Text>
-      </Button>
+        variant="primary"
+        className="w-full">
+        <View className="flex-row items-center justify-center gap-2">
+          <Text className="text-center font-semibold text-white">
+            {mode === 'edit' ? 'Update Subscription' : 'Add Subscription'}
+          </Text>
+        </View>
+      </GradientButton>
 
-      {mode === 'edit' && (
-        <Button
-          onPress={handleDelete}
-          isLoading={isSubmitting}
-          className="mt-2 rounded-xl bg-red-500 p-4 active:opacity-80">
-          <Text className="text-center font-semibold text-white">Delete Subscription</Text>
-        </Button>
+      {mode === 'edit' && subscription && (
+        <>
+          <GradientButton
+            onPress={handleDelete}
+            isLoading={isSubmitting}
+            variant="destructive"
+            className="w-full">
+            <Trash size={16} color="#fff" />
+            <Text className="text-center font-semibold text-white">Delete Subscription</Text>
+          </GradientButton>
+
+          <DeleteSubscriptionAlert
+            subscription={subscription}
+            show={showDeleteAlert}
+            onDismiss={() => setShowDeleteAlert(false)}
+            onSubmitStart={() => setIsSubmitting(true)}
+            onSubmitEnd={() => setIsSubmitting(false)}
+          />
+        </>
       )}
     </View>
   );
