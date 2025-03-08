@@ -88,7 +88,7 @@ export async function addSubscription(
 
   const { data, error } = await supabase
     .from('subscriptions')
-    .insert([objectToSnakeCase(subscriptionData)])
+    .insert(objectToSnakeCase(subscriptionData))
     .select(SUBSCRIPTION_SELECT)
     .single();
 

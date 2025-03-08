@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import { ImagePickerAsset } from 'expo-image-picker';
-import { useNavigation, useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View, Text } from 'react-native';
@@ -15,7 +15,7 @@ import { GradientButton } from '~/components/ui/GradientButton';
 import { Picker } from '~/components/ui/Picker';
 import { Subscription } from '~/types/subscription';
 import { TextInput } from '~/components/ui/TextInput';
-import { Plus, Trash } from 'lucide-react-native';
+import { Trash } from 'lucide-react-native';
 
 const subscriptionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -23,12 +23,12 @@ const subscriptionSchema = z.object({
     .string()
     .min(1, 'Price is required')
     .regex(/^\d*\.?\d*$/, 'Invalid price format'),
-  description: z.string().optional(),
-  category: z.string().optional(),
+  description: z.string().nullable(),
+  category: z.string().nullable(),
   billingCycle: z.enum(['week', 'month', 'quarter', 'year']),
   currency: z.enum(['eur', 'usd']),
   startDate: z.date(),
-  endDate: z.date().optional(),
+  endDate: z.date().nullable(),
 });
 
 type FormData = z.infer<typeof subscriptionSchema>;
@@ -75,11 +75,11 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
       name: subscription?.name ?? '',
       price: subscription?.price.toString() ?? '',
       description: subscription?.description ?? '',
-      category: subscription?.category ?? undefined,
+      category: subscription?.category ?? null,
       billingCycle: subscription?.billingCycle ?? 'month',
       currency: (subscription?.currency as 'eur' | 'usd') ?? 'eur',
       startDate: subscription?.startDate ? new Date(subscription.startDate) : new Date(),
-      endDate: subscription?.endDate ? new Date(subscription.endDate) : undefined,
+      endDate: subscription?.endDate ? new Date(subscription.endDate) : null,
     },
   });
 
@@ -90,7 +90,7 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
         ...data,
         price: parseFloat(data.price),
         startDate: data.startDate.toISOString(),
-        endDate: data.endDate?.toISOString(),
+        endDate: data.endDate?.toISOString() ?? null,
         isActive: true,
       };
 
@@ -128,7 +128,10 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
 
   return (
     <View className="flex gap-4 rounded-2xl bg-white p-4 shadow-lg">
-      <FileUploader onFileSelect={handleImageSelect} initialImageUrl={subscription?.logoUrl} />
+      <FileUploader
+        onFileSelect={handleImageSelect}
+        initialImageUrl={subscription?.logoUrl ?? undefined}
+      />
 
       <View>
         <Text className="mb-2 font-medium text-gray-900">Name</Text>
@@ -285,7 +288,7 @@ export default function SubscriptionForm({ mode = 'create', subscription }: Subs
           render={({ field: { value, onChange } }) => (
             <>
               <TextInput
-                value={value}
+                value={value ?? ''}
                 onChangeText={onChange}
                 placeholder="Family plan, yearly subscription, etc."
                 multiline
