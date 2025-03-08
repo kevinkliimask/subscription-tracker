@@ -1,3 +1,4 @@
+import React from 'react';
 import { FlatList, View, Text, ActivityIndicator } from 'react-native';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -25,13 +26,22 @@ export default function Home() {
     queryFn: getSubscriptions,
   });
 
-  // Sort subscriptions by next payment date
+  // Sort subscriptions by next payment date, with ended subscriptions at the end
   const sortedSubscriptions = useMemo(() => {
     if (!subscriptions) return [];
     return [...subscriptions].sort((a, b) => {
-      const dateA = new Date(getNextBillingDate(a.startDate, a.billingCycle));
-      const dateB = new Date(getNextBillingDate(b.startDate, b.billingCycle));
-      return dateA.getTime() - dateB.getTime();
+      const nextDateA = getNextBillingDate(a.startDate, a.billingCycle, a.endDate ?? undefined);
+      const nextDateB = getNextBillingDate(b.startDate, b.billingCycle, b.endDate ?? undefined);
+
+      // If both are ended (null), maintain original order
+      if (!nextDateA && !nextDateB) return 0;
+      // If A is ended, move it to the end
+      if (!nextDateA) return 1;
+      // If B is ended, move it to the end
+      if (!nextDateB) return -1;
+
+      // For active subscriptions, sort by next payment date
+      return new Date(nextDateA).getTime() - new Date(nextDateB).getTime();
     });
   }, [subscriptions]);
 

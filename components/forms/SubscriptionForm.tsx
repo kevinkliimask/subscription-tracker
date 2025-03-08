@@ -1,5 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import { ImagePickerAsset } from 'expo-image-picker';
+import { Trash } from 'lucide-react-native';
 import { useNavigation } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -15,7 +16,6 @@ import { GradientButton } from '~/components/ui/GradientButton';
 import { Picker } from '~/components/ui/Picker';
 import { Subscription } from '~/types/subscription';
 import { TextInput } from '~/components/ui/TextInput';
-import { Trash } from 'lucide-react-native';
 
 const subscriptionSchema = z.object({
   name: z.string().min(1, 'Name is required'),

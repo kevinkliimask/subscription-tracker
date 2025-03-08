@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 
 type SubscriptionLogoProps = {
   name: string;
-  logoUrl?: string;
+  logoUrl?: string | null;
   size?: number;
 };
 

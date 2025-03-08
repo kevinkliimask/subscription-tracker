@@ -1,3 +1,4 @@
+import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MenuView } from '@react-native-menu/menu';
 import { router } from 'expo-router';
@@ -71,14 +72,18 @@ type SubscriptionItemProps = {
 };
 
 const SubscriptionItem = ({ subscription, onDeletePress }: SubscriptionItemProps) => {
-  const { id, name, price, currency, logoUrl, startDate, billingCycle } = subscription;
-  const nextBillingDate = getNextBillingDate(startDate, billingCycle);
-  const timeUntilNext = getTimeUntilNextPayment(nextBillingDate);
+  const { id, name, price, currency, logoUrl, startDate, billingCycle, endDate } = subscription;
+  const nextBillingDate = getNextBillingDate(startDate, billingCycle, endDate ?? undefined);
+  const isEnded = !nextBillingDate;
 
-  // Calculate days until payment
-  const daysUntilPayment = Math.ceil(
-    (new Date(nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const timeUntilNext = nextBillingDate ? getTimeUntilNextPayment(nextBillingDate) : 'Ended';
+
+  // Calculate days until payment only if subscription is active
+  const daysUntilPayment = nextBillingDate
+    ? Math.ceil(
+        (new Date(nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      )
+    : 0;
 
   const handleMenuAction = ({ nativeEvent }: { nativeEvent: { event: string } }) => {
     switch (nativeEvent.event) {
@@ -117,17 +122,33 @@ const SubscriptionItem = ({ subscription, onDeletePress }: SubscriptionItemProps
     <MenuView onPressAction={handleMenuAction} actions={menuActions} shouldOpenOnLongPress>
       <Pressable
         onPress={() => router.push(`/subscriptions/${id}`)}
-        className="flex-row items-center rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800">
-        <SubscriptionLogo name={name} logoUrl={logoUrl} size={48} />
+        className={cn(
+          'flex-row items-center rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800',
+          isEnded && 'opacity-60'
+        )}>
+        <View className={cn(isEnded && '[filter:grayscale(100%)]')}>
+          <SubscriptionLogo name={name} logoUrl={logoUrl} size={48} />
+        </View>
 
         <View className="ml-4 flex-1">
           <Text className="text-base font-semibold text-gray-900 dark:text-white">{name}</Text>
           <View className="flex-row items-center gap-4">
             <Text className="text-sm text-gray-500 dark:text-gray-400">
-              Next payment:{'\n'}
-              {formatLocalDate(new Date(nextBillingDate))}
+              {isEnded ? (
+                <>
+                  Ended at:{'\n'}
+                  {formatLocalDate(new Date(endDate!))}
+                </>
+              ) : (
+                <>
+                  Next payment:{'\n'}
+                  {formatLocalDate(new Date(nextBillingDate!))}
+                </>
+              )}
             </Text>
-            <PaymentBadge timeUntilNext={timeUntilNext} daysUntilPayment={daysUntilPayment} />
+            {!isEnded && (
+              <PaymentBadge timeUntilNext={timeUntilNext} daysUntilPayment={daysUntilPayment} />
+            )}
           </View>
         </View>
 

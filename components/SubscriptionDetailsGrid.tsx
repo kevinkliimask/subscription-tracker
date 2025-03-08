@@ -56,7 +56,7 @@ type SubscriptionDetailsGridProps = {
 export default function SubscriptionDetailsGrid({ subscription }: SubscriptionDetailsGridProps) {
   const { startDate, billingCycle, category, endDate, price, currency } = subscription;
 
-  const nextBillingDate = getNextBillingDate(startDate, billingCycle);
+  const nextBillingDate = getNextBillingDate(startDate, billingCycle, endDate ?? undefined);
 
   return (
     <View className="bg-white dark:border-gray-800 dark:bg-gray-800/50">
@@ -69,7 +69,13 @@ export default function SubscriptionDetailsGrid({ subscription }: SubscriptionDe
           <InfoLabel
             icon={CalendarCheck2}
             label="Next Payment"
-            value={`${formatLocalDate(new Date(nextBillingDate))}\n${getTimeUntilNextPayment(nextBillingDate)}`}
+            value={
+              nextBillingDate
+                ? `${formatLocalDate(new Date(nextBillingDate))}\n${getTimeUntilNextPayment(
+                    nextBillingDate
+                  )}`
+                : 'Ended'
+            }
           />
         </View>
         <View className="flex-1">

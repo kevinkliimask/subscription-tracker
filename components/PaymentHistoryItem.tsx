@@ -5,7 +5,7 @@ import SubscriptionLogo from './SubscriptionLogo';
 
 type PaymentHistoryItemProps = {
   name: string;
-  logoUrl?: string;
+  logoUrl?: string | null;
   currency: string;
   price: number;
   date: Date;

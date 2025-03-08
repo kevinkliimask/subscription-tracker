@@ -45,8 +45,8 @@ const SubscriptionDetails = () => {
     );
   }
 
-  const { name, description, price, currency, logoUrl, startDate } = subscription;
-  const paymentDates = getPaymentDates(startDate, subscription.billingCycle);
+  const { name, description, price, currency, logoUrl, startDate, endDate } = subscription;
+  const paymentDates = getPaymentDates(startDate, subscription.billingCycle, endDate ?? undefined);
 
   return (
     <ScrollView className="flex-1 dark:bg-gray-900">

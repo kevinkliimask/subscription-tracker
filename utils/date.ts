@@ -12,9 +12,15 @@ export function formatLocalDate(
   return date.toLocaleDateString(undefined, options);
 }
 
-export function getNextBillingDate(startDate: string, cycle: BillingCycle) {
+export function getNextBillingDate(startDate: string, cycle: BillingCycle, endDate?: string) {
   const startDateConverted = new Date(startDate);
   const currentDate = new Date();
+  const endDateObj = endDate ? new Date(endDate) : null;
+
+  // Check if currentDate is greater than endDate
+  if (endDateObj && currentDate > endDateObj) {
+    return null;
+  }
 
   // Reset hours to compare just the dates
   startDateConverted.setHours(0, 0, 0, 0);
@@ -91,12 +97,17 @@ export function getTimeUntilNextPayment(nextPaymentDate: string) {
   return `in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
 }
 
-export function getPaymentDates(startDate: string, cycle: BillingCycle) {
+export function getPaymentDates(startDate: string, cycle: BillingCycle, endDate?: string) {
   const startDateObj = new Date(startDate);
   const currentDate = new Date();
+  const endDateObj = endDate ? new Date(endDate) : null;
 
   // Validate dates
-  if (isNaN(startDateObj.getTime()) || isNaN(currentDate.getTime())) {
+  if (
+    isNaN(startDateObj.getTime()) ||
+    isNaN(currentDate.getTime()) ||
+    (endDateObj && isNaN(endDateObj.getTime()))
+  ) {
     return [];
   }
 
@@ -108,7 +119,7 @@ export function getPaymentDates(startDate: string, cycle: BillingCycle) {
   const payments: Date[] = [];
   const currentPaymentDate = new Date(startDateObj);
 
-  while (currentPaymentDate <= currentDate) {
+  while (currentPaymentDate <= currentDate && (!endDateObj || currentPaymentDate <= endDateObj)) {
     payments.push(new Date(currentPaymentDate));
 
     switch (cycle) {
